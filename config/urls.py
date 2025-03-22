@@ -4,5 +4,6 @@ from django.urls import path, include
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('Usuarios/', include('Usuarios.urls')),  # Incluye las rutas de la app 'apiInventario'
+    path('Usuarios/', include('Usuarios.urls')), 
+    path('Perfil/', include('Perfil.urls')),
 ]
