@@ -33,6 +33,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -49,6 +50,9 @@ MIDDLEWARE = [
      'corsheaders.middleware.CorsMiddleware',
 ]
 
+
+
+
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.SessionAuthentication',
@@ -61,10 +65,16 @@ REST_FRAMEWORK = {
 
 
 CORS_ALLOW_ALL_ORIGINS = True  # Permite el acceso desde cualquier dominio
-# o restringe el acceso a dominios específicos
- #CORS_ALLOWED_ORIGINS = [
-#     "https://tu-frontend-dominio.com",
-#]
+
+CORS_ALLOW_CREDENTIALS = True 
+
+# Opcional, si usas CSRF y requieres confianza desde el frontend:
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:3000",
+]
+
+# Ajusta ALLOWED_HOSTS como mínimo
+ALLOWED_HOSTS = ["localhost", "127.0.0.1"]
 
 ROOT_URLCONF = 'config.urls'
 

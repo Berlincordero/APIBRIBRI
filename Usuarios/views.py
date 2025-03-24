@@ -1,44 +1,32 @@
-# perfiles_api/views.py
-from rest_framework import viewsets, status
-from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.parsers import MultiPartParser, FormParser
+# Usuarios/views.py
+
+from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
-from .models import Perfil
-from .serializers import PerfilSerializer, UserSerializer
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated
+from rest_framework import status
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from .serializers import UserSerializer
 
+class RegisterView(APIView):
+    def post(self, request):
+        serializer = UserSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({'message': 'Usuario registrado con éxito'}, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+class LoginView(APIView):
+    def post(self, request):
+        username = request.data.get('username')
+        password = request.data.get('password')
 
-class PerfilViewSet(viewsets.ModelViewSet):
-    """
-    Permite listar, crear, ver, actualizar, eliminar perfiles.
-    """
-    queryset = Perfil.objects.all()
-    serializer_class = PerfilSerializer
-    permission_classes = [IsAuthenticated]
-    # Para manejar subida de archivos (foto_perfil), config:
-    parser_classes = [MultiPartParser, FormParser]
+        user = authenticate(request, username=username, password=password)
+        if user is not None:
+            login(request, user)  # Crea la sesión en el servidor y envía cookie al cliente
+            return Response({'message': 'Inicio de sesión exitoso'}, status=status.HTTP_200_OK)
+        return Response({'error': 'Credenciales inválidas'}, status=status.HTTP_400_BAD_REQUEST)
 
-    def perform_create(self, serializer):
-        # Si deseas que al crear un perfil se asocie al usuario logueado
-        serializer.save(user=self.request.user)
-
-
-@api_view(['GET', 'PUT', 'PATCH'])
-@permission_classes([IsAuthenticated])
-def mi_perfil_view(request):
-    perfil, created = Perfil.objects.get_or_create(user=request.user)
-
-    if request.method == 'GET':
-        ser = PerfilSerializer(perfil)
-        return Response(ser.data)
-    elif request.method in ['PUT', 'PATCH']:
-        ser = PerfilSerializer(perfil, data=request.data, partial=(request.method=='PATCH'))
-        if ser.is_valid():
-            ser.save()
-            return Response(ser.data)
-        else:
-            return Response(ser.errors, status=400)
-
+class LogoutView(APIView):
+    def post(self, request):
+        logout(request)
+        return Response({'message': 'Sesión cerrada'}, status=status.HTTP_200_OK)
